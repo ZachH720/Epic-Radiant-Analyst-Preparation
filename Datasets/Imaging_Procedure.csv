@@ -1,0 +1,15 @@
+PROC_ID,PROC_NAME,MODALITY,CONTRAST_FLAG
+1,CT Head Without Contrast,CT,N
+2,CT Head With Contrast,CT,Y
+3,CT Chest Without Contrast,CT,N
+4,CT Chest With Contrast,CT,Y
+5,CT Chest PE Protocol,CT,Y
+6,CT Abdomen Pelvis Without Contrast,CT,N
+7,CT Abdomen Pelvis With Contrast,CT,Y
+8,CT Abdomen Pelvis With and Without Contrast,CT,Y
+9,CT Cervical Spine Without Contrast,CT,N
+10,CT Thoracic Spine Without Contrast,CT,N
+11,CT Lumbar Spine Without Contrast,CT,N
+12,CT Angiography Head and Neck,CT,Y
+13,CT Facial Bones Without Contrast,CT,N
+14,CT Sinus Without Contrast,CT,N

@@ -1,0 +1,54 @@
+/* 
+I'm using MySQL to analyze close to realistic Epic Radiant datasets. The datasets are synthetic and created using AI. 
+*/
+-- Create a database
+CREATE DATABASE epic_radiant;
+
+-- Selecting the database.
+USE epic_radiant;
+
+-- Create relational tables for patient, department, imaging procedure, imaging exam and order.
+CREATE TABLE Patient (
+  PAT_ID INT PRIMARY KEY,
+  PAT_MRN_ID VARCHAR(20) NOT NULL,
+  PAT_NAME VARCHAR(100) NOT NULL,
+  DOB DATE,
+  SEX CHAR(1) 
+);
+
+CREATE TABLE Department (
+  DEPARTMENT_ID INT PRIMARY KEY,
+  DEPARTMENT_NAME VARCHAR(100) NOT NULL
+)
+
+CREATE TABLE Imaging_Procedure (
+  PROC_ID INT PRIMARY KEY,
+  PROC_NAME VARCHAR(150) NOT NULL,
+  MODALITY VARCHAR(10) NOT NULL, -- CT, MR, US, DX, NM
+  CONTRAST_FLAG CHAR(1) CHECK (CONTRAST_FLAG IN('Y' OR 'N'))
+);
+
+CREATE TABLE Order (
+  ORDER_ID INT PRIMARY KEY,
+  PAT_ID INT NOT NULL,
+  PROC_ID INT NOT NULL,
+  ORDER_TIME DATETIME NOT NULL,
+  PRIORITY_ VARCHAR(10) CHECK (PRIORITY_ IN('STAT', 'ROUTINE', 'ASAP')),
+
+  FOREIGN KEY (PAT_ID) REFERENCES Patient(PAT_ID),
+  FOREIGN KEY (PROC_ID) REFERENCES Imaging_Procedure(PROC_ID)
+);
+
+CREATE TABLE Imaging_Exam (
+  EXAM_ID INT PRIMARY KEY,
+  ORDER_ID INT NOT NULL,
+  PROC_ID INT NOT NULL,
+  DEPARTMENT_ID INT NOT NULL,
+  EXAM_START_DTTM DATETIME,
+  EXAM_END_DTTM DATETIME,
+  EXAM_STATUS VARCHAR(20),
+
+  FOREIGN KEY (ORDER_ID) REFERENCES Order(ORDER_ID),
+  FOREIGN KEY (PROC_ID) REFERENCES Imaging_Procedure(PROC_ID),
+  FOREIGN KEY (DEPARTMENT_ID) REFERENCES Department(DEPARTMENT_ID)
+);
