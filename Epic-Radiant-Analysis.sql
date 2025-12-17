@@ -56,6 +56,26 @@ CREATE TABLE Imaging_Exam (
 -- SQL Queries
 
 -- 1. Find the average order-to-scan time by priority and department.
+SELECT department_name AS Department, priority_ AS Priority, ROUND(AVG(TIMESTAMPDIFF(MINUTE, order_time, exam_start_dttm)), 2) AS Avg_Min_Order_to_Start_Scan FROM department
+INNER JOIN imaging_exam ON imaging_exam.department_id = department.department_id
+INNER JOIN imaging_order ON imaging_exam.exam_id = imaging_order.order_id
+GROUP BY department_name, priority_
+ORDER BY Avg_Min_Order_to_Start_Scan DESC;
+
+-- Findings:
+
+/*
+                Department              | Priority | Avg_Min_Order_to_Start_Scan
+                ---------------------------------------------------
+                Trauma CT               | ROUTINE  | 137.46
+                Outpatient Imaging      | ROUTINE  | 135.82
+                Emergency Department CT | ROUTINE  | 130.99
+                Main Hospital CT        | ROUTINE  | 123.47
+                Trauma CT               | STAT     | 32.38
+                Emergency Department CT | STAT     | 32.28
+                Outpatient Imaging      | STAT     | 30.67
+                Main Hospital CT        | STAT     | 29.00
+*/
 
 -- 2. Find exams above the 90th percentile CT wait time for STAT exams.
 
