@@ -28,7 +28,7 @@ CREATE TABLE Imaging_Procedure (
   CONTRAST_FLAG CHAR(1) CHECK (CONTRAST_FLAG IN('Y' OR 'N'))
 );
 
-CREATE TABLE Order (
+CREATE TABLE Imaging_Order (
   ORDER_ID INT PRIMARY KEY,
   PAT_ID INT NOT NULL,
   PROC_ID INT NOT NULL,
@@ -48,7 +48,33 @@ CREATE TABLE Imaging_Exam (
   EXAM_END_DTTM DATETIME,
   EXAM_STATUS VARCHAR(20),
 
-  FOREIGN KEY (ORDER_ID) REFERENCES Order(ORDER_ID),
+  FOREIGN KEY (ORDER_ID) REFERENCES Imaging_Order(ORDER_ID),
   FOREIGN KEY (PROC_ID) REFERENCES Imaging_Procedure(PROC_ID),
   FOREIGN KEY (DEPARTMENT_ID) REFERENCES Department(DEPARTMENT_ID)
 );
+
+-- SQL Queries
+
+-- 1. Find the average order-to-scan time by priority and department.
+
+-- 2. Find exams above the 90th percentile CT wait time for STAT exams.
+
+-- 3. Identify prodecures causing the longest delays.
+
+-- 4. Compare contrast vs non-contrast throughput.
+
+-- 5. Find the cancellation rate by department.
+
+-- 6. Compare the ED vs outpatient CT performance.
+
+-- 7. Show the daily CT volume trends.
+
+-- 8. Find exams violating a 60-minute STAT SLA. 
+
+-- 9. Find how many CT exams were completed in the ED yeasterday.
+
+-- 10. Find the average order-to-scan time by procedure.
+
+-- 11. Find the top 5 most ordered CT procedures.
+
+-- 12. Find the patients name and date time that waited the longest for each different CT exam.
