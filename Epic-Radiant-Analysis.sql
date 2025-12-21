@@ -78,6 +78,13 @@ ORDER BY Avg_Min_Order_to_Start_Scan DESC;
 */
 
 -- 2. Find exams above the 90th percentile CT wait time for STAT exams.
+SELECT Exam_Id, priority_ AS Priority, TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) AS Wait_Time
+FROM Imaging_Exam INNER JOIN Imaging_Order ON Imaging_Exam.ORDER_ID = Imaging_Order.ORDER_ID
+WHERE priorty_ = 'STAT'
+ORDER BY Wait_Time DESC
+LIMIT FLOOR(0.1 * (SELECT COUNT(*) FROM Imaging_Order 
+    INNER JOIN Imaging_Exam ON Imaging_Exam.ORDER_ID = Imaging_Order.Order_ID
+    WHERE priority_ = 'STAT' AND end_exam_dttm NOT NULL));
 
 -- 3. Identify prodecures causing the longest delays.
 
