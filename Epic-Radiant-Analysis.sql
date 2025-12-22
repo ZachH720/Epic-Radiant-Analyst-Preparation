@@ -65,43 +65,109 @@ ORDER BY Avg_Min_Order_to_Start_Scan DESC;
 -- Findings:
 
 /*
-                Department              | Priority | Avg_Min_Order_to_Start_Scan
-                ---------------------------------------------------
-                Trauma CT               | ROUTINE  | 137.46
-                Outpatient Imaging      | ROUTINE  | 135.82
-                Emergency Department CT | ROUTINE  | 130.99
-                Main Hospital CT        | ROUTINE  | 123.47
-                Trauma CT               | STAT     | 32.38
-                Emergency Department CT | STAT     | 32.28
-                Outpatient Imaging      | STAT     | 30.67
-                Main Hospital CT        | STAT     | 29.00
+        Department              | Priority | Avg_Min_Order_to_Start_Scan
+        ---------------------------------------------------
+        Trauma CT               | ROUTINE  | 137.46
+        Outpatient Imaging      | ROUTINE  | 135.82
+        Emergency Department CT | ROUTINE  | 130.99
+        Main Hospital CT        | ROUTINE  | 123.47
+        Trauma CT               | STAT     | 32.38
+        Emergency Department CT | STAT     | 32.28
+        Outpatient Imaging      | STAT     | 30.67
+        Main Hospital CT        | STAT     | 29.00
 */
 
--- 2. Find exams above the 90th percentile CT wait time for STAT exams.
-SELECT Exam_Id, priority_ AS Priority, TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) AS Wait_Time
+-- 2. Find the 90th percentile CT wait time for STAT exams.
+SELECT wait_time_min AS Min_Wait_Time_At_90th_Percentile FROM (
+	SELECT 
+		TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) AS Wait_Time_Min, 
+		NTILE(10) OVER (
+			ORDER BY TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm)
+		) AS tile -- Groups the ordered dataset into 10 seperate groups
+	FROM Imaging_Exam INNER JOIN Imaging_Order ON Imaging_Exam.ORDER_ID = Imaging_Order.ORDER_ID
+	WHERE priority_ = 'STAT' AND exam_end_dttm IS NOT NULL
+    ) ranked
+WHERE tile = 9
+LIMIT 1;
+
+-- Findings:
+/*
+        Min_Wait_Time_At_90th_Percentile
+        ----------------------------
+        73
+*/
+
+-- 3. Find all STAT exams with a greater wait time than the 90th percentile wait.
+WITH select_90th AS (SELECT wait_time_min AS Min_Wait_Time_At_90th_Percentile FROM (
+	SELECT 
+		TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) AS Wait_Time_Min, 
+		NTILE(10) OVER (
+			ORDER BY TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm)
+		) AS tile -- Groups the ordered dataset into 10 seperate groups
+	FROM Imaging_Exam INNER JOIN Imaging_Order ON Imaging_Exam.ORDER_ID = Imaging_Order.ORDER_ID
+	WHERE priority_ = 'STAT' AND exam_end_dttm IS NOT NULL
+    ) ranked
+WHERE tile = 9
+LIMIT 1)
+
+SELECT exam_id AS Exam_Id, priority_ AS Priority, TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) AS Minutes_Waited
 FROM Imaging_Exam INNER JOIN Imaging_Order ON Imaging_Exam.ORDER_ID = Imaging_Order.ORDER_ID
-WHERE priorty_ = 'STAT'
-ORDER BY Wait_Time DESC
-LIMIT FLOOR(0.1 * (SELECT COUNT(*) FROM Imaging_Order 
-    INNER JOIN Imaging_Exam ON Imaging_Exam.ORDER_ID = Imaging_Order.Order_ID
-    WHERE priority_ = 'STAT' AND end_exam_dttm NOT NULL));
+WHERE priority_ = 'STAT' AND exam_end_dttm IS NOT NULL AND TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm) > (SELECT Min_Wait_Time_At_90th_Percentile FROM select_90th)
+ORDER BY Minutes_Waited DESC;
 
--- 3. Identify prodecures causing the longest delays.
+-- Findings:
 
--- 4. Compare contrast vs non-contrast throughput.
+/*
+     Exam_Id | Priority | Minutes_Waited
+     -----------------------------------
+     123     | STAT     | 97
+     25      | STAT     | 96
+     489     | STAT     | 93
+     437     | STAT     | 92
+     138     | STAT     | 91
+     385     | STAT     | 87
+     7       | STAT     | 86
+     203     | STAT     | 85
+     149     | STAT     | 84
+     454     | STAT     | 84
+     114     | STAT     | 83
+     180     | STAT     | 83
+     434     | STAT     | 83
+     239     | STAT     | 82
+     386     | STAT     | 82
+     59      | STAT     | 81
+     139     | STAT     | 80
+     338     | STAT     | 80
+     108     | STAT     | 77
+     189     | STAT     | 76
+     242     | STAT     | 76
+     293     | STAT     | 76
+     425     | STAT     | 76
+     213     | STAT     | 75
+     222     | STAT     | 75
+     257     | STAT     | 75
+     279     | STAT     | 75
+     14      | STAT     | 74
+     109     | STAT     | 74
+     167     | STAT     | 74
+     400     | STAT     | 74
+*/
+-- 4. Identify prodecures causing the longest delays.
 
--- 5. Find the cancellation rate by department.
+-- 5. Compare contrast vs non-contrast throughput.
 
--- 6. Compare the ED vs outpatient CT performance.
+-- 6. Find the cancellation rate by department.
 
--- 7. Show the daily CT volume trends.
+-- 7. Compare the ED vs outpatient CT performance.
 
--- 8. Find exams violating a 60-minute STAT SLA. 
+-- 8. Show the daily CT volume trends.
 
--- 9. Find how many CT exams were completed in the ED yeasterday.
+-- 9. Find exams violating a 60-minute STAT SLA. 
 
--- 10. Find the average order-to-scan time by procedure.
+-- 10. Find how many CT exams were completed in the ED yeasterday.
 
--- 11. Find the top 5 most ordered CT procedures.
+-- 11. Find the average order-to-scan time by procedure.
 
--- 12. Find the patients name and date time that waited the longest for each different CT exam.
+-- 12. Find the top 5 most ordered CT procedures.
+
+-- 13. Find the patients name and date time that waited the longest for each different CT exam.
