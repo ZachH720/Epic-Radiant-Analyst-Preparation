@@ -153,6 +153,34 @@ ORDER BY Minutes_Waited DESC;
      400     | STAT     | 74
 */
 -- 4. Identify prodecures causing the longest delays.
+SELECT proc_name AS Procedure_Name, ROUND(AVG(TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm)), 2) AS Avg_Min_Delayed 
+  FROM imaging_procedure
+    INNER JOIN imaging_order ON imaging_order.PROC_ID = imaging_procedure.PROC_ID
+    INNER JOIN imaging_exam ON imaging_exam.order_id = imaging_order.order_id
+GROUP BY proc_name
+ORDER BY Avg_Min_Delayed DESC;
+
+-- Findings:
+
+/*
+      Procedure_Name                               | Avg_Min_Delayed
+      -------------------------------------------------------------
+      CT Lumbar Spine Without Contrast             | 126.62
+      CT Thoracic Spine Without Contrast           | 125.80
+      CT Chest With Contrast                       | 124.81
+      CT Head Without Contrast                     | 124.72
+      CT Head With Contrast                        | 123.32
+      CT Chest Without Contrast                    | 121.26
+      CT Facial Bones Without Contrast             | 115.92
+      CT Angiography Head and Neck                 | 114.08
+      CT Abdomen Pelvis With and Without Contrast  | 112.55
+      CT Sinus Without Contrast                    | 110.22
+      CT Cervical Spine Without Contrast           | 109.50
+      CT Chest PE Protocol                         | 108.57
+      CT Abdomen Pelvis Without Contrast           | 105.64
+      CT Abdomen Pelvis With Contrast              | 104.00
+
+*/
 
 -- 5. Compare contrast vs non-contrast throughput.
 
