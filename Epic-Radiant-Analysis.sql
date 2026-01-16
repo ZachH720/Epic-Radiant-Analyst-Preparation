@@ -183,6 +183,27 @@ ORDER BY Avg_Min_Delayed DESC;
 */
 
 -- 5. Compare contrast vs non-contrast throughput.
+SELECT 
+	CASE
+		WHEN contrast_flag = 'Y' THEN 'Contrast'   
+    WHEN contrast_flag = 'N' THEN 'Non-Contrast'
+    END AS Procedure_Type, -- Rename the contrast flag characters to Contrast and Non-Contrast
+    ROUND(AVG(TIMESTAMPDIFF(MINUTE, order_time, exam_end_dttm)), 2) AS Avg_Minutes_Order_To_Complete,
+    ROUND(AVG(TIMESTAMPDIFF(MINUTE, exam_start_dttm, exam_end_dttm)), 2) AS Avg_Minutes_Start_To_Complete,
+    ROUND(AVG(TIMESTAMPDIFF(MINUTE, order_time, exam_start_dttm)), 2) AS Avg_Minutes_Order_To_Start
+	FROM imaging_procedure
+		INNER JOIN imaging_order ON imaging_order.PROC_ID = imaging_procedure.PROC_ID
+		INNER JOIN imaging_exam ON imaging_exam.order_id = imaging_order.order_id
+	GROUP BY contrast_flag
+    ORDER BY Avg_Minutes_Order_To_Complete, Avg_Minutes_Start_To_Complete, Avg_Minutes_Order_To_Start;
+-- Findings
+/*
+      Procedure_Type | Avg_Minutes_Order_To_Complete | Avg_Minutes_Start_To_Complete | Avg_Minutes_Order_To_Start
+      -----------------------------------------------------------------------------------------------------------
+      Contrast       | 114.51                        | 25.68                         | 88.29
+      Non-Contrast   | 117.42                        | 25.05                         | 95.02
+*/
+
 
 -- 6. Find the cancellation rate by department.
 
